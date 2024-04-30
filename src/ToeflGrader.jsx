@@ -18,7 +18,7 @@ const ToeflGrader = () => {
 
     useEffect(() => {
         const getProfile = async () => {
-            const response = await axios.post('http://localhost:3000/profile', {}, { headers: { authorization: user.jwt } });
+            const response = await axios.post(`${import.meta.env.VITE_BACKENDAPI}/profile`, {}, { headers: { authorization: user.jwt } });
             setUser(response.data)
         }
 
@@ -30,7 +30,7 @@ const ToeflGrader = () => {
     const fetchScore = async () => {
 
         try {
-          const response = await axios.post('http://localhost:3000/submit-paper', {
+          const response = await axios.post(`${import.meta.env.VITE_BACKENDAPI}/submit-paper`, {
                 content: article,
             }, {
                 headers: {
@@ -59,7 +59,7 @@ const ToeflGrader = () => {
 
     const fetchContent = async () => {
         try {
-          const response = await axios.post('http://localhost:3000/improve', {
+          const response = await axios.post(`${import.meta.env.VITE_BACKENDAPI}/improve`, {
             content: article,
           }, {
             headers: {

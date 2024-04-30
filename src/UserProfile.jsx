@@ -21,7 +21,7 @@ const UserProfile = () => {
     }
 
     const saveProfile = async () => {
-        const response = await axios.post('http://localhost:3000/update-profile', {
+        const response = await axios.post(`${import.meta.env.VITE_BACKENDAPI}/update-profile`, {
             username: username,
             oldPassword: oldPassword,
             newPassword: newPassword
@@ -33,7 +33,7 @@ const UserProfile = () => {
 
         if (response.status === 200) {
 
-            const response = await axios.post('http://localhost:3000/profile', {}, {
+            const response = await axios.post(`${import.meta.env.VITE_BACKENDAPI}/profile`, {}, {
                 headers: {
                     "authorization": user.jwt
                 }

@@ -54,7 +54,7 @@ const Register = () => {
            
 
     const insertUser = async (email, username, password) => {
-        return await axios.post('http://localhost:3000/register', {
+        return await axios.post(`${import.meta.env.VITE_BACKENDAPI}/register`, {
             email: email,
             username: username,
             password: password
