@@ -1,70 +1,65 @@
 import loginpic from "./assets/loginpic.svg"
 import {useState} from "react";
 import axios from 'axios';
-import { useRecoilState, atom } from "recoil";
-import { userAtom } from "./atoms/user-atom";
 import { useNavigate } from 'react-router-dom';
 
-const Login = (props) => {
 
-    const [user, setUser] = useRecoilState(userAtom);
+const Register = () => {
 
-    const [emailUsername,setemailUsername]=useState('')
-    // const [username,setUsername]=useState('')
+    const [email,setEmail]=useState('')
+    const [username,setUsername]=useState('')
     const [password,setPassword]=useState('')
 
     const [validationMessage, setValidationMessage] = useState({
-        emailUsername:"",
-        // username:"",
+        email:"",
+        username:"",
         password:""
     });
-   
-    const navigate = useNavigate();
-    
-    const handleSubmit = (event) => {
+
+    const navigate = useNavigate(); 
+    const handleSubmit = (event) =>{
         event.preventDefault();
 
         // Reset validation messages
         setValidationMessage({
-            emailUsername: '',
-            // username: '',
+            email: '',
+            username: '',
             password: ''
         });
-    
         
-
         
         // Check each field and set the validation message if empty
-        if (!emailUsername) {
-            setValidationMessage(prev => ({ ...prev, emailUsername: 'Please type in your email/username.' }));
+        if (!email) {
+            setValidationMessage(prev => ({ ...prev, email: 'Please type in your email.' }));
         }
-        // if (!username) {
-        //     setValidationMessage(prev => ({ ...prev, username: 'Please pick a username.' }));
-        // }
+        if (!username) {
+            setValidationMessage(prev => ({ ...prev, username: 'Please pick a username.' }));
+        }
         if (!password) {
             setValidationMessage(prev => ({ ...prev, password: 'Please choose a password.' }));
         }
 
         // If all fields are filled, proceed with the form submission logic
-        if (emailUsername && password) {
+        if (email && username && password) {
             // Form submission logic here
-            console.log("Form submitted:", { emailUsername, password });
-            verifyUser(emailUsername,password).then((response) => {
-                if (response.status === 200) {
-                    setUser(response.data);
-                    navigate('/toefl-grader');
+            console.log("Form submitted:", { email, username, password });
+            insertUser(email, username, password).then((response) => {
+                if (response.status === 201) {
+                    alert('You have registered');
+                    navigate('/login');
                 }
             })
         }
     };
+           
 
-    const verifyUser = async (emailUsername,password) => {
-          return await axios.post('http://localhost:3000/login', {
-            emailUsername: emailUsername,
+    const insertUser = async (email, username, password) => {
+        return await axios.post('http://localhost:3000/register', {
+            email: email,
+            username: username,
             password: password
-          }); 
+        })
     };
-    
 
     return (
         <div className="grid md:grid-cols-2 w-[90%] mx-auto h-[calc(100vh-48px)] gap-10">
@@ -78,19 +73,19 @@ const Login = (props) => {
                     
                     <div className="flex flex-col gap-2">
                         <label className="block text-gray-700 text-sm font-bold" htmlFor="email">
-                            Email/Username
+                            Email
                         </label>
-                        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="emailUsername" type="text" placeholder="Type in email/username" onChange={(e) => setemailUsername(e.target.value)}></input>
-                        {validationMessage.emailUsername && <p className="text-red-500 text-xs italic">{validationMessage.emailUsername}</p>}
+                        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="email@example.com" onChange={(e) => setEmail(e.target.value)}></input>
+                        {validationMessage.email && <p className="text-red-500 text-xs italic">{validationMessage.email}</p>}
                     </div>
 
-                    {/* <div class="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2">
                         <label className="block text-gray-700 text-sm font-bold" htmlFor="username">
                             Username
                         </label>
                         <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)}></input>
                         {validationMessage.username && <p className="text-red-500 text-xs italic">{validationMessage.username}</p>}
-                    </div> */}
+                    </div>
 
                     <div className="flex flex-col gap-2">
                         <label className="block text-gray-700 text-sm font-bold" htmlFor="password">
@@ -102,15 +97,15 @@ const Login = (props) => {
 
                     <div className="flex flex-col gap-2 justify-center my-2">
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                            Log In
+                            Sign Up
                         </button>
                         {/* <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
                             Forgot Password?
                         </a> */}
                     </div>
                     
-                    <div className="flex justify-center">
-                        <a href="./register" className="text-black text-xs italic">Oops, I need to register!</a>
+                    <div className="flex">
+                        <a href="./login" className="text-black text-xs italic">Already have an account? Please click here to login.</a>
                     </div>
                 </form>
                 </div>
@@ -119,6 +114,6 @@ const Login = (props) => {
 
         </div>
     )
-}
+};
 
-export default Login;
+export default Register;

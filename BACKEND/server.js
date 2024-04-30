@@ -1,6 +1,6 @@
 import express from 'express';
 import Pool from 'pg';
-import{Configuration, OpenAIapi} from 'openai';
+import {Configuration, OpenAIapi} from 'openai';
 
 const pool = new Pool({
     user: 'your_database_user',

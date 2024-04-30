@@ -1,30 +1,81 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useRecoilState, atom } from "recoil";
+import { userAtom} from "./atoms/user-atom";
+import { useNavigate } from 'react-router-dom';
 
 const ToeflGrader = () => {
     
     const[score,setScore] = useState(undefined); 
     const [improvedContent, setImprovedContent] = useState(undefined);
-    const[userToken,setuserToken] = useState(undefined);
-    const[article, setarticle] = useState(undefined);
+    // const[userToken,setuserToken] = useState(undefined);
+    const [article, setarticle] = useState(undefined);
     const wordCount = useRef(0); // 0 , [ABC123]
     const [articleLimitError, setArticleLimitError] = useState(false);
-    
+    const [user, setUser] = useRecoilState(userAtom); 
+
+    //page reload, need to reflects the value coming from backend: endpoint, header:Data, [component mount once]
+
+    useEffect(() => {
+        const getProfile = async () => {
+            const response = await axios.post('http://localhost:3000/profile', {}, { headers: { authorization: user.jwt } });
+            setUser(response.data)
+        }
+
+        if (user.user) {
+            getProfile()
+        }
+    }, [])
+
     const fetchScore = async () => {
+
         try {
-          const response = await axios.post('http://localhost:3000/submit-paper'); // {score: "Example", remaining_token: 1}
-          setScore(response.data.score);
-          setuserToken(response.data.remaining_token)
+          const response = await axios.post('http://localhost:3000/submit-paper', {
+                content: article,
+            }, {
+                headers: {
+                    authorization: user.jwt
+                }
+            }); // {score: "Example", remaining_token: 1}
+          setScore(response.data.score);    
+            // Create a new user object with updated remaining_tokens
+            const updatedUser = {
+            ...user, // spread the existing user object to copy all its properties
+            user: {
+                ...user.user,
+                remaining_tokens: response.data.remaining_token // update the remaining_tokens property
+            }
+        };
+
+        // Set the updated user object in the state
+            setUser(updatedUser);
+
+
         } catch (error) {
           console.error("Error fetching data: ", error);
         }
     };
+// how to pass value to a post request : after endpoint,{passing in object}
 
     const fetchContent = async () => {
         try {
-          const response = await axios.post('http://localhost:3000/improve'); // {content: "Example", remaining_token: 0}
-          setImprovedContent(response.data.content); // {content: "Renewed Content"}
-          setuserToken(response.data.remaining_token)
+          const response = await axios.post('http://localhost:3000/improve', {
+            content: article,
+          }, {
+            headers: {
+                authorization: user.jwt
+            }
+          }); // {content: "Example", remaining_token: 0}
+          setImprovedContent(response.data.content); 
+          const updatedUser = {
+            ...user, // spread the existing user object to copy all its properties
+            user: {
+                ...user.user,
+                remaining_tokens: response.data.remaining_token // update the remaining_tokens property
+            }
+        };
+        setUser(updatedUser);
+        // {content: "Renewed Content"}
         } catch (error) {
           console.error("Error fetching data: ", error);
         }
@@ -56,8 +107,22 @@ const ToeflGrader = () => {
         return filteredWords.length;
     }
 
+    
+    const navigate = useNavigate(); 
+        
+    useEffect(() => {
+        if (!user.user) {
+            navigate('/login');
+        }
+    }, [navigate, user.user])
+
     return (
         <div className="flex flex-col my-20 w-96 md:w-[700px] mx-auto gap-5">
+            <div className='flex gap-1 justify-center'>
+                <span className='text-base xl:text-lg text-[#F4A5A1] font-[Inter] font-bold text-center'>{user?.user?.remaining_tokens}</span>
+                <p className='text-base xl:text-lg text-white font-[Inter]'>token remaining today!</p>  
+            </div>
+
             <div>
                 <h1 className='text-base xl:text-lg text-white font-[Inter] mb-3'>Step One - Paste Your Article </h1> 
                 <textarea className="w-full rounded-lg shadow-md shadow-white" rows="9" onChange={(event)=>limitWord(event)}></textarea>
@@ -73,7 +138,7 @@ const ToeflGrader = () => {
                 <button className='text-black font-[Inter] text-xs xl:text-lg rounded-lg bg-white w-[60%] p-2 text-center' onClick={() => fetchScore()}>Check My Score</button>
             </div>
                 {score && (
-                    <div className='text-base xl:text-lg text-white font-[Inter] text-center'>Your Current Score is <span className='text-base xl:text-lg text-[#F4A5A1] font-[Inter] font-bold text-center'>{score}!</span></div>
+                    <div className='text-base xl:text-lg text-white font-[Inter] text-center'>Current Result: <span className='text-base xl:text-lg text-[#F4A5A1] font-[Inter] font-bold text-center'>{score}!</span></div>
                 ) }
             </div>
             
@@ -82,7 +147,7 @@ const ToeflGrader = () => {
                 <div>
                 <div className='flex justify-between items-center'>
                     <h1 className='text-base xl:text-lg text-white font-[Inter] text-left'>Step Three</h1>
-                    <button className="'text-black font-[Inter] text-xs xl:text-lg rounded-lg  w-[60%] bg-white p-2 text-center"onClick={() =>fetchContent()}>Improve Now!</button>
+                    <button className="'text-black font-[Inter] text-xs xl:text-lg rounded-lg  w-[60%] bg-white p-2 text-center"onClick={() =>fetchContent()}>Help me improve!</button>
                 </div>
                 </div>
 
@@ -92,10 +157,7 @@ const ToeflGrader = () => {
                     ) }
                     </div>
                 
-                <div className='flex gap-1 justify-center'>
-                    <span className='text-base xl:text-lg text-[#F4A5A1] font-[Inter] font-bold text-center'>{userToken}</span>
-                    <p className='text-base xl:text-lg text-white font-[Inter]'>token remaining today!</p>  
-                </div>
+                
             </>
             ) }
         </div>

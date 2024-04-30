@@ -3,6 +3,7 @@ import './App.css'
 import MainPageInfoComponent from './components/MainPageInfoComponent';  
 
 const Home = () => {
+
     return (
         <>
             <MainPageInfoComponent />
